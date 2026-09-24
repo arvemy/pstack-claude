@@ -1,3 +1,5 @@
+> **Not ported to Claude Code.** benny runs as two Cursor Automations triggered by Slack messages, and Claude Code routines have no Slack trigger. This pack is kept as upstream wrote it for reference. Do not run its setup from Claude Code. See `PORTING.md` at the repository root.
+
 # benny
 
 benny gives you two cursor automations for slack issue reports. one triages each report. the other reproduces confirmed bugs and may prepare a small draft fix.

@@ -1,0 +1,15 @@
+{
+  "description": "Tell the session where pstack's skill files live, since every pstack skill is user-invoked only and is loaded by reading its SKILL.md.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\" \"${CLAUDE_PLUGIN_ROOT}\""
+          }
+        ]
+      }
+    ]
+  }
+}

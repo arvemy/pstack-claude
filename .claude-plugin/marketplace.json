@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "pstack-claude",
+  "description": "pstack ported from Cursor to Claude Code.",
+  "owner": {
+    "name": "arvemy"
+  },
+  "plugins": [
+    {
+      "name": "pstack",
+      "source": "./plugins/pstack",
+      "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
+      "category": "development"
+    }
+  ]
+}

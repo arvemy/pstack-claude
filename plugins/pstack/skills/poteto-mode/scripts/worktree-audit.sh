@@ -22,10 +22,17 @@ prs=$(mktemp)
 gh pr list --author "@me" --state all --limit 1000 \
 	--json number,state,headRefName 2>/dev/null > "$prs" || echo "[]" > "$prs"
 
-# Transcripts dir: ~/.cursor/projects/<slugified-repo-path>/agent-transcripts.
-slug=$(printf '%s' "$main_wt" | sed 's#^/##; s#/#-#g')
-transcripts="$HOME/.cursor/projects/$slug/agent-transcripts"
+# Claude Code transcripts: ~/.claude/projects/<slug>/, where <slug> is the
+# session's starting directory with every non-alphanumeric character as "-".
+# A session started inside a worktree gets that worktree's own directory.
+transcripts_dir() { printf '%s/.claude/projects/%s' "$HOME" "$(printf '%s' "$1" | sed 's/[^A-Za-z0-9]/-/g')"; }
+transcripts=$(transcripts_dir "$main_wt")
 now=$(date +%s)
+
+# GNU and BSD stat/date disagree on flags. Pick once so mtimes never read as empty.
+if stat -c '%Y' / >/dev/null 2>&1; then mtimes() { stat -c '%Y %n' "$@"; }; else mtimes() { stat -f '%m %N' "$@"; }; fi
+day() { date -d "@$1" '+%Y-%m-%d' 2>/dev/null || date -r "$1" '+%Y-%m-%d'; }
+if command -v rg >/dev/null 2>&1; then search() { rg -l "$@"; }; else search() { grep -rlF "$@"; }; fi
 
 printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
 
@@ -63,11 +70,13 @@ git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r wt;
 	# Most recent chat whose transcript operated in this worktree. Match path
 	# followed by "/" or a quote so glint-482 does not match glint-482-r37.
 	last="-"; last_ts=0
-	if [ -d "$transcripts" ]; then
-		f=$(rg -l -e "${wt}/" -e "${wt}\"" "$transcripts" 2>/dev/null \
-			| xargs stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
+	dirs=()
+	for d in "$transcripts" "$(transcripts_dir "$wt")"; do [ -d "$d" ] && dirs+=("$d"); done
+	if [ "${#dirs[@]}" -gt 0 ]; then
+		f=$(search -e "${wt}/" -e "${wt}\"" "${dirs[@]}" 2>/dev/null \
+			| while read -r t; do mtimes "$t"; done | sort -rn | head -1)
 		if [ -n "$f" ]; then last_ts=$(echo "$f" | awk '{print $1}')
-			last=$(date -r "$last_ts" '+%Y-%m-%d' 2>/dev/null); fi
+			last=$(day "$last_ts"); fi
 	fi
 	recent=$([ "$last_ts" -gt 0 ] 2>/dev/null && [ $(( (now - last_ts) / 86400 )) -le 4 ] && echo yes || echo no)
 

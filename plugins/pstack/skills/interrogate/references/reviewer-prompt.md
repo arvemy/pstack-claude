@@ -26,6 +26,10 @@ You are reviewing whether the code achieves this intent well. Do NOT question th
 
 {CODE_QUALITY_CONTENTS}
 
+## Lead Lens
+
+Review everything, but start with and go deepest on {LEAD_LENS}. Other reviewers lead with the other rubric sections.
+
 ## Instructions
 
 Review the code through every lens in the rubric and the code-quality lens above that you find relevant. Do not force lenses that don't apply. A simple bug fix does not need paragraphs about architectural integrity.

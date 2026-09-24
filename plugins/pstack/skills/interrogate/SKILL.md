@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Interrogate
 
-Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric. The adversarial signal comes from model diversity, not assigned personas.
+Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric, plus one lead lens. The adversarial signal comes from model diversity. The reviewers are all Claude models, which share a lineage, so each also leads with a different part of the rubric to spread their blind spots.
 
 The deliverable is a synthesized verdict. Do NOT auto-apply changes.
 
@@ -33,35 +33,35 @@ Write one clear paragraph. If you're unsure about the intent, ask the user befor
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the Task tool. Use the `interrogate reviewers` line in `~/.cursor/rules/pstack-models.mdc`, one reviewer per entry, extending or shrinking the Reviewer A/B/C labels below to the configured entry count. If the rule or that line is missing, use the table defaults.
+Launch all reviewers in a single message using the Agent tool. Use the `interrogate reviewers` line in the pstack model config (`~/.claude/pstack/models.md`), one reviewer per entry, extending or shrinking the Reviewer A/B/C labels below to the configured entry count. If the config or that line is missing, use the table defaults. With more than three reviewers, cycle the lead lenses in table order.
 
-| Subagent | Default model |
-|----------|---------------|
-| Reviewer A | `claude-opus-5-5-max` |
-| Reviewer B | `gpt-5.6-sol-max` |
-| Reviewer C | `grok-4.7-xhigh-fast` |
+| Subagent | Default model | Lead lens (rubric sections) |
+|----------|---------------|-----------------------------|
+| Reviewer A | `fable` | Correctness, Root Causes vs. Symptoms |
+| Reviewer B | `opus` | Structural Integrity, Complexity Budget |
+| Reviewer C | `sonnet` | Security, Verification |
 
 For each reviewer:
-- `subagent_type`: `generalPurpose`
-- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.
-- `readonly`: `true`
+- `subagent_type`: `pstack:readonly-agent`
+- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `inherit` entry, omit `model` so that reviewer runs on the parent model.
 
-If the Task tool rejects a configured entry, run that reviewer on the table default of its family and say so. Families go by prefix: `claude-*`, `gpt-*`, and `grok-*`. With no family match, use Reviewer A's default. If it rejects a table default, check the valid slugs in the Task tool's error message, pick the closest equivalent (prefer the highest-reasoning tier of the same family), spawn with it, and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
+If the Agent tool rejects a configured entry, run that reviewer on its table default and say so. If it rejects a table default, leave `model` unset for that reviewer and say so. Do not block the review on the model issue. Never treat an `inherit` entry as a rejected value.
 
 Read `references/reviewer-prompt.md` and fill in the template with:
 1. The stated intent
 2. The diff or file contents
 3. The review rubric from `references/rubric.md`
 4. The code-quality lens from `references/code-quality-review.md`
+5. That reviewer's lead lens from the table
 
-The same filled template goes to all reviewers, so every model applies the code-quality lens.
+Apart from the lead lens, the same filled template goes to all reviewers, so every model applies the full rubric and the code-quality lens.
 
 ## Step 4, Synthesize
 
 As results come back, build a unified picture:
 
 1. **Parse all findings** from the reviewers
-2. **Identify consensus**. Findings raised by 2+ models independently are highest signal.
+2. **Identify consensus**. Findings raised by 2+ models independently are highest signal. A finding raised outside the raiser's lead lens is stronger still, because nothing primed it.
 3. **Identify lone-model findings**. Still worth reading, but weight accordingly.
 4. **Deduplicate**. Different models may describe the same issue differently. Merge these and note which models raised it.
 5. **Note disagreements**. If one model flags something and another explicitly says the opposite, that's useful context for the verdict.
