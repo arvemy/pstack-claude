@@ -3,7 +3,7 @@
 A Claude Code port of [poteto's pstack](https://github.com/cursor/plugins/tree/main/pstack). The plugin lives in [`plugins/pstack`](./plugins/pstack/README.md). This repository is also its marketplace.
 
 ```
-/plugin marketplace add ~/pstack-claude
+/plugin marketplace add arvemy/pstack-claude
 /plugin install pstack@pstack-claude
 ```
 

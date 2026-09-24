@@ -19,18 +19,18 @@ fork it. improve it. make it yours. PRs are welcome!
 in claude code:
 
 ```
-/plugin marketplace add ~/pstack-claude
+/plugin marketplace add arvemy/pstack-claude
 /plugin install pstack@pstack-claude
 ```
 
 or from a shell:
 
 ```bash
-claude plugin marketplace add ~/pstack-claude
+claude plugin marketplace add arvemy/pstack-claude
 claude plugin install pstack@pstack-claude
 ```
 
-for local development, load the plugin straight from the checkout:
+for local development, clone the repo to `~/pstack-claude` and load the plugin straight from the checkout:
 
 ```bash
 claude --plugin-dir ~/pstack-claude/plugins/pstack

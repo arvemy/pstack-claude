@@ -4,21 +4,21 @@ In this page you install the plugin, pick which models pstack uses, and run your
 
 ## Install the plugin
 
-These commands assume the repository is cloned at `~/pstack-claude`. In a Claude Code session, run:
+In a Claude Code session, run:
 
 ```text
-/plugin marketplace add ~/pstack-claude
+/plugin marketplace add arvemy/pstack-claude
 /plugin install pstack@pstack-claude
 ```
 
 Claude Code confirms the plugin is installed. From a shell, the same two steps are:
 
 ```bash
-claude plugin marketplace add ~/pstack-claude
+claude plugin marketplace add arvemy/pstack-claude
 claude plugin install pstack@pstack-claude
 ```
 
-To work on pstack itself, load the plugin straight from the checkout:
+To work on pstack itself, clone the repository to `~/pstack-claude` and load the plugin straight from the checkout:
 
 ```bash
 claude --plugin-dir ~/pstack-claude/plugins/pstack
