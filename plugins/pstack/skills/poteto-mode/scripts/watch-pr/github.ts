@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import type * as T from "./types.ts";
 import { nonEmpty, parsePrNumber } from "./types.ts";
 export const REVIEW_THREADS_QUERY =
-  "\nquery ReviewThreads($owner: String!, $repo: String!, $pr: Int!) {\n  repository(owner: $owner, name: $repo) {\n    pullRequest(number: $pr) {\n      reviewThreads(first: 100) {\n        nodes {\n          id\n          isResolved\n          comments(first: 10) {\n            nodes {\n              body\n              createdAt\n              path\n              line\n              author { login }\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
+  "\nquery ReviewThreads($owner: String!, $repo: String!, $pr: Int!) {\n  repository(owner: $owner, name: $repo) {\n    pullRequest(number: $pr) {\n      reviewThreads(first: 100) {\n        nodes {\n          id\n          isResolved\n          comments(first: 10) {\n            nodes {\n              body\n              createdAt\n              path\n              line\n              author { login }\n              pullRequestReview { id }\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
 export const PR_COMMIT_STATUS_QUERY =
   "\nquery PrCommitStatuses($owner: String!, $repo: String!, $pr: Int!) {\n  repository(owner: $owner, name: $repo) {\n    pullRequest(number: $pr) {\n      commits(last: 50) {\n        nodes {\n          commit {\n            oid\n            statusCheckRollup {\n              state\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
 export const PR_CHECK_ROLLUP_QUERY =
@@ -328,6 +328,14 @@ function parseComment(value: unknown): T.ReviewComment {
           ? Number(object.line)
           : missing("review comment.line", object.line),
     createdAt: string(object.createdAt, "review comment.createdAt"),
+    reviewId:
+      object.pullRequestReview === null
+        ? null
+        : string(
+            record(object.pullRequestReview, "review comment.pullRequestReview")
+              .id,
+            "review comment.pullRequestReview.id"
+          ),
   };
 }
 function isBugbot(comment: T.ReviewComment | null): boolean {
@@ -336,6 +344,7 @@ function isBugbot(comment: T.ReviewComment | null): boolean {
   const body = comment.body.toLowerCase();
   return (
     author.includes("bugbot") ||
+    author === "claude" ||
     (author === "cursor" &&
       [
         "bugbot",
@@ -355,7 +364,7 @@ function passKey(comment: T.ReviewComment | null): string | null {
     const match = pattern.exec(comment.body);
     if (match?.[1]) return match[1];
   }
-  return null;
+  return comment.reviewId;
 }
 export function parseReviewThreads(value: unknown): readonly T.ReviewThread[] {
   const nodes = list(
