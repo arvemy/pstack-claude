@@ -51,7 +51,7 @@ Upstream panels get their adversarial signal from three model vendors. The port'
 
 Cursor encodes reasoning effort in the model slug (`-max`, `-xhigh`), so upstream's budget rewrote every slug's effort. The Claude Code Agent tool takes a model per spawn but no effort. Effort comes from the agent definition. So the port splits the two.
 
-- **Effort** is fixed per pstack agent in its frontmatter (`effort: xhigh` for `poteto-agent` and `readonly-agent`). The main session's effort is the user's choice via `/effort`.
+- **Effort** is fixed per pstack agent in its frontmatter (`effort: xhigh` for `poteto-agent`, `readonly-agent`, and `worker`). `pstack:worker` is what `swarm` workers and `arena` candidates run as. It replaces the built-in `general-purpose` agent, whose effort Claude Code does not document. The main session's effort is the user's choice via `/effort`.
 - **Budget** moves roles along the ladder `haiku < sonnet < opus < fable`. See `skills/setup-pstack/SKILL.md` for the exact rule.
 
 ## Configuration
@@ -85,13 +85,13 @@ Claude Code has no documented always-applied rules directory. The skills already
 | Upstream (Cursor) | Port (Claude Code) |
 |---|---|
 | `/poteto-mode`, `/how`, and every other pstack slash command | `/pstack:poteto-mode`, `/pstack:how`, and so on. Plugin skills are namespaced. |
-| Cross-skill routing by name | Unchanged in prose. Every pstack skill keeps `disable-model-invocation: true`, so the Skill tool cannot load one. A `SessionStart` hook (`hooks/session-start.sh`) tells the session where the skill files live and lists their exact names, so a routed skill is loaded by reading its `SKILL.md`. `poteto-mode` also says its siblings live at `../<name>/SKILL.md`, and the pstack agents carry the same pointer, since hooks do not reach subagents. |
+| Cross-skill routing by name | Unchanged in prose. Every pstack skill except `typescript-best-practices` keeps `disable-model-invocation: true`, so the Skill tool cannot load one. A `SessionStart` hook (`hooks/session-start.sh`) tells the session where the skill files live and lists their exact names, so a routed skill is loaded by reading its `SKILL.md`. `poteto-mode` also says its siblings live at `../<name>/SKILL.md`, and the pstack agents carry the same pointer, since hooks do not reach subagents. |
 | `name: Poteto Mode` | `name: poteto-mode` |
 | Cursor mode frontmatter (`mode`, `icon`, `color`, `reminder`) | Dropped. |
 | `.cursor/skills/`, `~/.cursor/skills/` | `.claude/skills/`, `~/.claude/skills/` |
 | `~/.cursor/plugins/` | `~/.claude/plugins/` |
-| Cursor's built-in `create-skill` | The `skill-creator` skill (`/skill-creator:skill-creator`, from the official Anthropic plugin marketplace) |
-| Cursor's built-in `babysit` | Dropped. Claude Code has no built-in babysit. |
+| Cursor's built-in `create-skill` | The `skill-creator` skill (`/skill-creator:skill-creator`, from the official Anthropic plugin marketplace). `plugin.json` declares it as a dependency and `marketplace.json` lists `claude-plugins-official` in `allowCrossMarketplaceDependenciesOn`, so installing pstack installs it. Without that marketplace added, pstack fails to load and names the missing dependency. |
+| Cursor's built-in `babysit` | Dropped. Claude Code documents no built-in babysit. pstack's Babysit playbook and `watch-pr` script cover it. |
 | `deslop`, `control-cli`, `control-ui` "from `cursor-team-kit`" | The bundled **deslop**, **control-cli**, **control-ui** skills |
 
 ## Transcripts
@@ -128,17 +128,16 @@ These upstream parts depend on Cursor-only services and are not in this port. A 
 
 ## Known gaps
 
-- `typescript-best-practices` keeps upstream's `paths` frontmatter. Whether Claude Code auto-loads a skill by path is unverified, so treat it as loaded only when routed or invoked.
-- Upstream's `reminder` frontmatter made `poteto-mode` re-prompt itself each turn in Cursor. The port moved its text into a **Sticky** paragraph in the skill body. Nothing re-injects it after context compaction.
-- Subagents spawned as `general-purpose` (swarm workers, arena candidates) run at whatever effort Claude Code gives that built-in agent. Only pstack's own agents pin `xhigh`.
-- Nesting depth for subagents that spawn subagents (orchestrate's sub-coordinators) is unverified in Claude Code. Upstream's "depth 3" claim was dropped.
+- Upstream's `reminder` frontmatter made `poteto-mode` re-prompt itself each turn in Cursor. The port moved its text into a **Sticky** paragraph at the top of the skill body. Claude Code documents that `/compact` re-injects an invoked skill's body, capped at 5,000 tokens, and `SKILL.md` is about 4,900 tokens. In a headless run after `/compact`, the model quoted the Sticky sentence and the last playbook bullet verbatim without tools, but said it took them from the summary. The run does not show whether the body was re-injected or the summary carried it.
+- `typescript-best-practices` loads by the model's choice, not deterministically. See Verification.
+- Every pstack skill except `typescript-best-practices` stays user-invoked only.
 
 ## Verification
 
-Run on 2026-09-24 against Claude Code with `claude --plugin-dir plugins/pstack`.
+Run on 2026-09-24 against Claude Code with `claude --plugin-dir plugins/pstack`. The entries marked 2026-09-28 were added after the gap-closing pass.
 
 - `claude plugin validate --strict` passes for the marketplace and plugin manifests. In this Claude Code build it does not inspect skill or agent frontmatter.
-- `claude plugin details pstack` loads 49 skills, 3 agents, and 1 `SessionStart` hook.
+- `claude plugin details pstack` loads 49 skills, 4 agents, and 1 `SessionStart` hook (4 agents as of 2026-09-28).
 - `bun test orch watch-pr` in `skills/poteto-mode/scripts`: 52 pass, 0 fail.
 - `tools/port-from-cursor.py` is idempotent. A second run changes 0 files.
 - `check-plan.mjs` accepts the ported program template and reports `Program checklist lacks "Re-read them at every tick"` when that line is removed.
@@ -149,3 +148,7 @@ Run on 2026-09-24 against Claude Code with `claude --plugin-dir plugins/pstack`.
   - `pstack:poteto-agent` resolves `${CLAUDE_PLUGIN_ROOT}` to the real `poteto-mode/SKILL.md`.
   - `/pstack:how` falls back to defaults with no config file, reads its template by relative path, and spawns `pstack:readonly-agent` on `opus`.
   - Asking for "pstack's unslop skill" makes the model read `skills/unslop/SKILL.md`. Before the hook listed skill names, it read `deslop` by mistake.
+- 2026-09-28, nesting depth. A `general-purpose` subagent probe found the `Agent` tool at depths 1 and 2 and none at depth 3, with each spawn succeeding. This matches the documented default of three layers, set by `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`. Orchestrate's coordinator, track, worker layout fits inside it.
+- 2026-09-28, dependency. In a clean `CLAUDE_CONFIG_DIR`, installing pstack with the official marketplace added and listed in `allowCrossMarketplaceDependenciesOn` also installed `skill-creator`. Without the allowlist, or without the official marketplace added, pstack reported `failed to load` with the missing dependency named.
+- 2026-09-28, `pstack:worker`. A headless session spawned it and it reported `Agent`, `Edit`, and `Write`. Its `xhigh` effort cannot be observed from the session, so that rests on the frontmatter.
+- 2026-09-28, `typescript-best-practices`. With `disable-model-invocation: true` removed, the model tried to load the skill on 2 of 3 TypeScript edits and on 0 of 2 Python edits. With the line present it loaded on 0 of 2 TypeScript edits. The runs were small, so treat the rate as rough.
