@@ -4,8 +4,9 @@
 Usage: tools/port-from-cursor.py [plugin_dir]   (default: plugins/pstack)
 
 Idempotent. Only touches Markdown under README.md, docs/, skills/, and agents/. Skips the
-bundled cursor-team-kit skills (copied unmodified), unported/, and automations/. Context-dependent
-edits (model defaults, read-only spawns, transcripts, cloud agents) are done by hand.
+bundled cursor-team-kit skills (copied unmodified), unported/, and automations/. The port
+drops make-bot-ui and automations/benny (see PORTING.md), so delete them after copying upstream.
+Context-dependent edits (model defaults, read-only spawns, transcripts, cloud agents) are done by hand.
 """
 
 import re

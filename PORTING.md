@@ -86,7 +86,7 @@ Claude Code has no documented always-applied rules directory. The skills already
 |---|---|
 | `/poteto-mode`, `/how`, and every other pstack slash command | `/pstack:poteto-mode`, `/pstack:how`, and so on. Plugin skills are namespaced. |
 | Cross-skill routing by name | Unchanged in prose. Every pstack skill keeps `disable-model-invocation: true`, so the Skill tool cannot load one. A `SessionStart` hook (`hooks/session-start.sh`) tells the session where the skill files live and lists their exact names, so a routed skill is loaded by reading its `SKILL.md`. `poteto-mode` also says its siblings live at `../<name>/SKILL.md`, and the pstack agents carry the same pointer, since hooks do not reach subagents. |
-| `name: Poteto Mode`, `name: Make Bot UI` | `name: poteto-mode`, `name: make-bot-ui` |
+| `name: Poteto Mode` | `name: poteto-mode` |
 | Cursor mode frontmatter (`mode`, `icon`, `color`, `reminder`) | Dropped. |
 | `.cursor/skills/`, `~/.cursor/skills/` | `.claude/skills/`, `~/.claude/skills/` |
 | `~/.cursor/plugins/` | `~/.claude/plugins/` |
@@ -114,10 +114,12 @@ The Claude Code transcript format is internal and can change between releases. S
 | "Cursor restart" | "a Claude Code restart" |
 | "the Cursor dashboard" | `ListAgents`, or claude.ai/code for remote sessions |
 
-## Not ported yet
+## Dropped from upstream
 
-- `make-bot-ui` wakes a Cursor Grok Bot routine over a Cursor webhook. The Claude Code counterpart is a routine with an API trigger. The skill is parked in `unported/make-bot-ui/` so it does not register.
-- `automations/benny` depends on Cursor Automations with a Slack message trigger. Claude Code routines have no Slack trigger. The pack stays in `automations/benny/` with a notice. It never registered as skills.
+These upstream parts depend on Cursor-only services and are not in this port. A newer upstream copy will bring them back, so delete them again after copying.
+
+- `skills/make-bot-ui`. It wakes a Cursor Grok Bot routine over a Cursor webhook.
+- `automations/benny`. It runs on Cursor Automations with a Slack message trigger, which Claude Code routines do not have.
 
 ## Fixes beyond the port
 

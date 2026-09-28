@@ -272,10 +272,6 @@ the budget moves roles along the ladder haiku < sonnet < opus < fable. it doesn'
 
 if you ran pstack in cursor before, setup offers once to carry your old choices over. a rerun keeps any role whose model differs from the default.
 
-## automations
-
-the [benny automation pack](./automations/benny/) is cursor-only and not ported yet. benny triages slack issue reports, then reproduces and fixes confirmed bugs with real ui evidence. it runs on cursor automations with a slack trigger, and claude code routines have no slack trigger. its files stay here for reference and are not registered as slash skills. see [PORTING.md](../../PORTING.md) for status.
-
 ## license
 
 MIT
