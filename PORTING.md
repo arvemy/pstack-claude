@@ -4,6 +4,7 @@ This repository is a Claude Code port of [pstack](https://github.com/cursor/plug
 
 - Upstream commit: `12d587dfb20741cafc376c42c696c5f6e2a64487` (2026-09-23)
 - Upstream version: `0.15.5`
+- Port version: `0.15.5-cc.N`. Claude Code refreshes its plugin cache only when the `version` in `plugin.json` changes, so bump `N` with every port change that should reach installed copies.
 
 This file records every mapping the port applies. Use it when you port a newer upstream version, so the same Cursor construct always becomes the same Claude Code construct.
 
