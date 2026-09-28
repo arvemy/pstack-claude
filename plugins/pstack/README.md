@@ -252,9 +252,7 @@ twenty-three short skills, one principle each. `poteto-mode` indexes them inline
 a few things `poteto-mode` references come from other plugins:
 
 - [`/pstack:deslop`](./skills/deslop/SKILL.md), [`control-cli`](./skills/control-cli/SKILL.md) (for CLIs and TUIs), and [`control-ui`](./skills/control-ui/SKILL.md) (for browser, Electron, web) are bundled here under MIT. see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
-- skill authoring uses anthropic's `skill-creator` plugin (`/skill-creator:skill-creator`), from the official anthropic plugin marketplace.
-
-install `skill-creator` alongside pstack if you want the full set.
+- skill authoring uses anthropic's `skill-creator` plugin (`/skill-creator:skill-creator`), from the official anthropic plugin marketplace. pstack declares it as a dependency, so installing pstack installs it too. if pstack fails to load with a missing `skill-creator` dependency, add the official marketplace first with `/plugin marketplace add anthropics/claude-plugins-official`.
 
 ## why are there no planning skills?
 
