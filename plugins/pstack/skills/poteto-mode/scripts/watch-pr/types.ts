@@ -61,6 +61,7 @@ export interface ReviewComment {
   readonly path: string | null;
   readonly line: number | null;
   readonly createdAt: string;
+  readonly reviewId: string | null;
 }
 export interface ReviewThread {
   readonly id: string;
