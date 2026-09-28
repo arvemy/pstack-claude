@@ -16,6 +16,7 @@ This file records every mapping the port applies. Use it when you port a newer u
 | (none) | `.claude-plugin/marketplace.json` at the repository root |
 | `pstack/skills/`, `pstack/agents/` | `plugins/pstack/skills/`, `plugins/pstack/agents/` |
 | `cursor-team-kit/skills/{deslop,control-cli,control-ui}` | Bundled into `plugins/pstack/skills/`. See `plugins/pstack/THIRD_PARTY_NOTICES.md`. |
+| `@cursor-skill/poteto-mode-tools` in the tools' `package.json` and `bun.lock` | `@pstack/poteto-mode-tools` |
 
 ## Models
 
@@ -94,6 +95,7 @@ Claude Code has no documented always-applied rules directory. The skills already
 | Cursor's built-in `create-skill` | The `skill-creator` skill (`/skill-creator:skill-creator`, from the official Anthropic plugin marketplace). `plugin.json` declares it as a dependency and `marketplace.json` lists `claude-plugins-official` in `allowCrossMarketplaceDependenciesOn`, so installing pstack installs it. Without that marketplace added, pstack fails to load and names the missing dependency. |
 | Cursor's built-in `babysit` | Dropped. Claude Code documents no built-in babysit. pstack's Babysit playbook and `watch-pr` script cover it. |
 | `deslop`, `control-cli`, `control-ui` "from `cursor-team-kit`" | The bundled **deslop**, **control-cli**, **control-ui** skills |
+| `~/Library/Application Support/Cursor` as a worktree-cleanup reclaimer | Orphaned plugin versions under `~/.claude/plugins/cache/` |
 
 ## Transcripts
 
@@ -126,6 +128,7 @@ These upstream parts depend on Cursor-only services and are not in this port. A 
 
 - `skills/poteto-mode/scripts/worktree-audit.sh` used BSD-only `stat -f` and `date -r` with errors suppressed. On Linux the most-recent-chat column came back empty, so a worktree a live session was using could be bucketed `safe`. The port picks GNU or BSD flags at startup and also searches the worktree's own transcript directory.
 - Upstream playbooks re-read skills with `git show origin/main:pstack/skills/...` and run `node pstack/skills/...`, which only resolve inside the cursor/plugins repository. The port re-reads pstack's installed skill files, and `check-plan.mjs` checks for the matching `Re-read them at every tick` marker.
+- The port tells `poteto-mode` to triage Claude code review comments like Bugbot, but upstream's `watch-pr` only recognized Bugbot and Cursor logins. The port also recognizes the `claude` bot login. Claude comments carry no `RUN_ID` marker, so `passKey` falls back to the pull request review a thread belongs to, and one Claude run submits one review.
 
 ## Known gaps
 
@@ -153,3 +156,4 @@ Run on 2026-09-24 against Claude Code with `claude --plugin-dir plugins/pstack`.
 - 2026-09-28, `pstack:worker`. A headless session spawned it and it reported `Agent`, `Edit`, and `Write`. Its `xhigh` effort cannot be observed from the session, so that rests on the frontmatter.
 - 2026-09-28, `typescript-best-practices`. With `disable-model-invocation: true` removed, the model tried to load the skill on 2 of 3 TypeScript edits and on 0 of 2 Python edits. With the line present it loaded on 0 of 2 TypeScript edits. The runs were small, so treat the rate as rough.
 - 2026-09-28, swarm audit of the port. Four `pstack:worker` agents checked links, frontmatter, Cursor leftovers, and the hook and scripts. They found and this pass fixed `AskUserQuestion` limits in `automate-me` and `setup-pstack`, unresolvable `pstack/skills/...` paths in the program-plan template, the Cursor-only lane VM, agent store, cloud-agent PR, `mcp_auth`, and `Shell` wording, a noisy `session-start.sh` on an empty skills directory, and a stack trace in `check-plan.mjs` on a missing file. A rerun of the link check found 0 broken targets, and `bun test orch watch-pr` passed 52 of 52. The `test` script in `package.json` now installs before it runs, so `bun run test` passes on a fresh checkout. A bare `bun test` still fails once there, as in upstream.
+- 2026-09-28, leftover audit. A rerunnable scan of links, skill and agent names, frontmatter, and Cursor patterns found no broken target outside a template placeholder. It found `watch-pr` skipping Claude review threads, the `@cursor-skill` package name, a Cursor folder in `worktree-cleanup`, and a package change that shipped without a version bump. Against `anthropics/claude-code-action`, `watch-pr --status-only` reported PR 1867's Claude thread as `isBugbot=false` with 0 passes before the fix and `true` with 1 pass after it. PR 1650 reported 2 passes. `bun run test` passed 53 of 53, and `port-from-cursor.py` changed 0 files on a second run.
