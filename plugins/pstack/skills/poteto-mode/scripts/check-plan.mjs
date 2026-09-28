@@ -34,6 +34,11 @@ if (!file) {
 	process.exit(2);
 }
 
+if (!fs.existsSync(file)) {
+	console.error(`No such file: ${file}`);
+	process.exit(2);
+}
+
 const raw = fs.readFileSync(file, "utf8").split(/\r?\n/);
 const problems = [];
 const fail = (line, message) => problems.push(`${file}:${line}: ${message}`);

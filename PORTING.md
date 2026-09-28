@@ -86,7 +86,7 @@ Claude Code has no documented always-applied rules directory. The skills already
 | Upstream (Cursor) | Port (Claude Code) |
 |---|---|
 | `/poteto-mode`, `/how`, and every other pstack slash command | `/pstack:poteto-mode`, `/pstack:how`, and so on. Plugin skills are namespaced. |
-| Cross-skill routing by name | Unchanged in prose. Every pstack skill except `typescript-best-practices` keeps `disable-model-invocation: true`, so the Skill tool cannot load one. A `SessionStart` hook (`hooks/session-start.sh`) tells the session where the skill files live and lists their exact names, so a routed skill is loaded by reading its `SKILL.md`. `poteto-mode` also says its siblings live at `../<name>/SKILL.md`, and the pstack agents carry the same pointer, since hooks do not reach subagents. |
+| Cross-skill routing by name | Unchanged in prose. Every pstack skill except `typescript-best-practices` and the three bundled skills (`deslop`, `control-cli`, `control-ui`, copied unmodified) keeps `disable-model-invocation: true`, so the Skill tool cannot load one. A `SessionStart` hook (`hooks/session-start.sh`) tells the session where the skill files live and lists their exact names, so a routed skill is loaded by reading its `SKILL.md`. `poteto-mode` also says its siblings live at `../<name>/SKILL.md`, and the pstack agents carry the same pointer, since hooks do not reach subagents. |
 | `name: Poteto Mode` | `name: poteto-mode` |
 | Cursor mode frontmatter (`mode`, `icon`, `color`, `reminder`) | Dropped. |
 | `.cursor/skills/`, `~/.cursor/skills/` | `.claude/skills/`, `~/.claude/skills/` |
@@ -131,7 +131,6 @@ These upstream parts depend on Cursor-only services and are not in this port. A 
 
 - Upstream's `reminder` frontmatter made `poteto-mode` re-prompt itself each turn in Cursor. The port moved its text into a **Sticky** paragraph at the top of the skill body. Claude Code documents that `/compact` re-injects an invoked skill's body, capped at 5,000 tokens, and `SKILL.md` is about 4,900 tokens. In a headless run after `/compact`, the model quoted the Sticky sentence and the last playbook bullet verbatim without tools, but said it took them from the summary. The run does not show whether the body was re-injected or the summary carried it.
 - `typescript-best-practices` loads by the model's choice, not deterministically. See Verification.
-- Every pstack skill except `typescript-best-practices` stays user-invoked only.
 
 ## Verification
 
@@ -153,3 +152,4 @@ Run on 2026-09-24 against Claude Code with `claude --plugin-dir plugins/pstack`.
 - 2026-09-28, dependency. In a clean `CLAUDE_CONFIG_DIR`, installing pstack with the official marketplace added and listed in `allowCrossMarketplaceDependenciesOn` also installed `skill-creator`. Without the allowlist, or without the official marketplace added, pstack reported `failed to load` with the missing dependency named.
 - 2026-09-28, `pstack:worker`. A headless session spawned it and it reported `Agent`, `Edit`, and `Write`. Its `xhigh` effort cannot be observed from the session, so that rests on the frontmatter.
 - 2026-09-28, `typescript-best-practices`. With `disable-model-invocation: true` removed, the model tried to load the skill on 2 of 3 TypeScript edits and on 0 of 2 Python edits. With the line present it loaded on 0 of 2 TypeScript edits. The runs were small, so treat the rate as rough.
+- 2026-09-28, swarm audit of the port. Four `pstack:worker` agents checked links, frontmatter, Cursor leftovers, and the hook and scripts. They found and this pass fixed `AskUserQuestion` limits in `automate-me` and `setup-pstack`, unresolvable `pstack/skills/...` paths in the program-plan template, the Cursor-only lane VM, agent store, cloud-agent PR, `mcp_auth`, and `Shell` wording, a noisy `session-start.sh` on an empty skills directory, and a stack trace in `check-plan.mjs` on a missing file. A rerun of the link check found 0 broken targets, and `bun test orch watch-pr` passed 52 of 52. Not fixed: `bun test` still needs a prior `bun install`, as upstream does.

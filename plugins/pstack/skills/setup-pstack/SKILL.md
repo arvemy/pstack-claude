@@ -49,7 +49,7 @@ Panel roles (arena runners, arena cross-judge pool, architect runners, interroga
 
 Effort is not part of the budget. pstack's own agents run at `xhigh` effort, set in their definitions. The main session's effort is the user's to set with `/effort`.
 
-**(c) Show the roles and confirm.** Show every role with its model. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering the five choices. Use AskUserQuestion. For panel roles the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it that differs from the parent's model when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+**(c) Show the roles and confirm.** Show every role with its model. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles. Use AskUserQuestion, which takes at most four options per question, so offer `fable`, `opus`, `sonnet`, and `haiku`, and take `inherit` through the Other answer. For panel roles the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it that differs from the parent's model when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
 ### 4. Validate
 
