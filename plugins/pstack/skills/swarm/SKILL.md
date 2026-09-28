@@ -27,7 +27,7 @@ Open a todolist with one entry per phase before launching anything.
 
 ## Phase B: Fan out
 
-Spawn all N workers in one message with `subagent_type: general-purpose` and the step 4 model, left unset for `inherit`. A worker that writes gets `isolation: "worktree"`, so it has its own checkout. When the session offers remote subagents, prefer `isolation: "remote"` for workers that need nothing on the user's computer.
+Spawn all N workers in one message with `subagent_type: "pstack:worker"` and the step 4 model, left unset for `inherit`. A worker that writes gets `isolation: "worktree"`, so it has its own checkout. When the session offers remote subagents, prefer `isolation: "remote"` for workers that need nothing on the user's computer.
 
 When a worker must start from a non-default pushed branch, name the branch in its brief and have it check that branch out first.
 

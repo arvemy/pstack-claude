@@ -212,6 +212,8 @@ pstack also ships [Comment Sicko](./agents/comment-sicko.md), a read-only commen
 
 the port adds [`pstack:readonly-agent`](./agents/readonly-agent.md), a read-only worker that pstack skills spawn wherever a brief must not change anything. edits are blocked, and MCP tools stay available.
 
+the port also adds [`pstack:worker`](./agents/worker.md), the agent `swarm` workers and `arena` candidates run as. it has every tool and runs at `xhigh` effort, where the built-in `general-purpose` agent runs at whatever effort claude code gives it. a large swarm therefore spends more per worker.
+
 ## principles
 
 twenty-three short skills, one principle each. `poteto-mode` indexes them inline and reads that index at task start. the standalone files are there so other skills can reference a principle by name, and so the index can point at the full rule for each.
