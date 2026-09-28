@@ -256,6 +256,42 @@ it("annotates Bugbot threads with distinct review-pass counts", () => {
   expect(threads.map((thread) => thread.bugbotReviewPasses)).toEqual([3, 3]);
 });
 
+it("counts Claude review passes by the review each thread belongs to", () => {
+  const claudeThread = (id: string, review: string) => ({
+    id,
+    isResolved: false,
+    comments: {
+      nodes: [
+        {
+          body: "🟡 The new confinement only excludes the top-level names",
+          createdAt: "now",
+          path: "src/snapshot.ts",
+          line: 12,
+          author: { login: "claude" },
+          pullRequestReview: { id: review },
+        },
+      ],
+    },
+  });
+  const threads = parseReviewThreads({
+    data: {
+      repository: {
+        pullRequest: {
+          reviewThreads: {
+            nodes: [
+              claudeThread("one", "PRR_first"),
+              claudeThread("two", "PRR_first"),
+              claudeThread("three", "PRR_second"),
+            ],
+          },
+        },
+      },
+    },
+  });
+  expect(threads.map((thread) => thread.isBugbot)).toEqual([true, true, true]);
+  expect(threads.map((thread) => thread.bugbotReviewPasses)).toEqual([2, 2, 2]);
+});
+
 describe("context and stack discovery", () => {
   it("returns a fully explicit context without any reader call", async () => {
     const reader = fakeReader();
