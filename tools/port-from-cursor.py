@@ -3,7 +3,8 @@
 
 Usage: tools/port-from-cursor.py [plugin_dir]   (default: plugins/pstack)
 
-Idempotent. Only touches Markdown under README.md, docs/, skills/, and agents/. Skips the
+Idempotent. Only touches Markdown under README.md, docs/, skills/, and agents/, plus the
+poteto-mode tools' package.json and bun.lock. Skips the
 bundled cursor-team-kit skills (copied unmodified), unported/, and automations/. The port
 drops make-bot-ui and automations/benny (see PORTING.md), so delete them after copying upstream.
 Context-dependent edits (model defaults, read-only spawns, transcripts, cloud agents) are done by hand.
@@ -33,6 +34,7 @@ RULES = [
     ("Cursor /loop", r"Cursor's `/loop`", "Claude Code's `/loop`"),
     ("/loop built-in", r"`/loop` is Cursor's built-in", "`/loop` is Claude Code's built-in"),
     ("Cursor restart", r"\bCursor restart\b", "Claude Code restart"),
+    ("tools package name", r"@cursor-skill/", "@pstack/"),
     (
         "slash commands",
         r"(?<![\w/.:~-])/(" + "|".join(map(re.escape, skill_names)) + r")(?![\w-])",
@@ -51,6 +53,8 @@ def targets():
             continue
         if top in {"README.md", "docs", "skills", "agents"}:
             yield path
+    for name in ("package.json", "bun.lock"):
+        yield root / "skills/poteto-mode/scripts" / name
 
 
 ALT_TEXT = re.compile(r"(!\[[^\]]*\])")
